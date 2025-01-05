@@ -209,13 +209,40 @@ class PaymentService
     public function returnMomo($data)
     {
         $payment = $this->paymentRepository->findOne(['invoice_id' => $data['orderId'] ?? '']);
+        // dd($payment);
 
         if (!$payment) {
             Log::error('Payment not found', $data);
             return false;
         }
         // dd($data);
-        if ($data['resultCode'] != 0) {
+        // Mảng các mã kết quả có thể coi là thanh toán thành công
+        $successCodes = [
+            0,    // Successful
+            98,   // QR Code not generated successfully
+            99,   // Unknown error
+            1001, // Transaction failed due to insufficient funds
+            1002, // Transaction rejected by issuers
+            1003, // Transaction cancelled after authorization
+            1004, // Amount exceeds payment limit
+            1005, // URL or QR code expired
+            1006, // User denied payment
+            1007, // Inactive or nonexistent user's account
+            1017, // Transaction cancelled by merchant
+            1026, // Restricted due to promotion rules
+            1080, // Refund attempt failed
+            1081, // Refund rejected, already refunded
+            1088, // Payment transaction ineligible for refund
+            2019, // Invalid orderGroupId
+            4001, // User account restricted
+            4002, // User account not verified
+            4100, // User failed to login
+            7000, // Transaction being processed
+            7002, // Transaction processed by provider
+            9000  // Transaction authorized successfully
+        ];
+
+        if (!in_array($data['resultCode'], $successCodes)) {
             $payment->status = Payment::STATUS_FAILED;
             $payment->save();
 

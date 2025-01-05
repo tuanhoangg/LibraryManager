@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Members extends Model
 {
@@ -52,9 +53,14 @@ class Members extends Model
     public function getBooksCanBorrowAttribute()
     {
         $maxBooks = $this->membership_plan->limit_book;
-        $currentBorrowedBooks = $this->borrowedHistory()
-            ->where('status', BorrowHistory::STATUS_BORROWED)
-            ->orWhere('status', BorrowHistory::STATUS_PENDING)->count();
+        $currentBorrowedBooks = BorrowHistory::query()
+            ->where('user_id', Auth::user()->id)
+            ->where(function ($q) {
+                $q->where('status', BorrowHistory::STATUS_BORROWED)
+                    ->orWhere('status', BorrowHistory::STATUS_PENDING);
+            })
+            ->count();
+        // dd($currentBorrowedBooks, Auth::user()->id);
         return $maxBooks - $currentBorrowedBooks;
     }
 }

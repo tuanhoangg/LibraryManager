@@ -14,8 +14,7 @@ class DashboardController extends Controller
 
     public function __construct(
         protected BorrowHistoryService $borrowHistoryService
-    ) {
-    }
+    ) {}
 
     public function dashboardView(Request $request)
     {
@@ -46,6 +45,7 @@ class DashboardController extends Controller
             $labelsBook[] = $genre->name;
             $dataBook[] = $genre->total;
         }
+        // dd($totals, $dates);
         return view('pages.dashboard.index', [
             'data' => $data,
             'dates' => $dates,
